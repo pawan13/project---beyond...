@@ -1,20 +1,84 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Form } from 'react-bootstrap';
 import { CustomInput } from '../components/custom-input/CustomInput';
 
 const InputForm = () => {
+  const [formData, setFormData] = useState({
+    BusinessType: "",
+    BusinessName: "",
+    Location: "",
+    BusinessHighlights: "",
+    Services: [],
+  });
+
+  const [response, setResponse] = useState(null);
+
+  const handleOnChange = (e)=>{
+    const {name, value} = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  } 
+
+  const handleServiceChange = (index, field, value) => {
+    const updatedServices = [...formData.Services];
+    updatedServices[index][field] = value;
+
+    setFormData({
+      ...formData,
+      Services: updatedServices,
+    });
+  };
+
+  const handleOnSubmit = async(e)=>{
+    e.preventDefault();
+
+    try {
+      const response = await fetch("your-post-endpoint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const responseData = await response.json();
+      setResponse(responseData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+  
+
+  useEffect(() => {
+    const getHistory = async () => {
+      try {
+        const historyResponse = await fetch("your-get-endpoint");
+        const historyData = await historyResponse.json();
+        console.log("History data:", historyData);
+        // Handle and display history data as needed
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      }
+    };
+
+    getHistory();
+  }, []); // This empty dependency array ensures the effect runs only once on component mount
     const inputs = [
         {
           label: "BusinessType",
           name: "BusinessType",
           type: "text",
+          value:formData.BusinessType,
           placeholder: "Marketing Agency",
           required: true,
         },
         {
           label: "BusinessName",
-          name: "Business Name",
+          name: "BusinessName",
           type: "text",
+          value:formData.BusinessName,
           placeholder: "Requisite Design",
           required: true,
         },
@@ -22,38 +86,18 @@ const InputForm = () => {
           label: "Location",
           name: "Location",
           type: "text",
+          value: formData.Location,
           placeholder: "04xxxxxxxx",
         },
         {
           label: "Business Highlight",
           name: "Business Highlight",
           type: "text",
+          value:formData.BusinessHighlight,
           placeholder: "Enter multiple values separated by commas",
           required: true,
         },
       ]; 
-
-      const services = [
-        {
-          title: "Marketing Strategy",
-          uniqueSellingPoint: "We turn theory into tangibility",
-          benefits:
-            "30+ page marketing document that outlines your specific business next steps. Modern audits rooted in the fundamentals of marketing. Proven multi-industry approaches that are yours to keep from month 1 on",
-        },
-        {
-          title: "SEO",
-          detail: "Say no to keyword packages",
-          benefits:
-            "No more confusing SEO packages. Personalized SEO strategies that are tailored to your business needs and goals. Proven track record of achieving high search engine rankings for our clients year over year.",
-        },
-      ];
-    
-const handleOnSubmit = ()=>{
-
-} 
-const handleOnChange = ()=>{
-
-} 
  return (
     <div className='form border p-3 shadow-lg rounded'>
       <Form onSubmit={handleOnSubmit}>
@@ -62,14 +106,65 @@ const handleOnChange = ()=>{
         {inputs.map((item, i)=>(
           <CustomInput {...item} onChange={handleOnChange}/>
         ))}
-        <hr />
-        <h3>Services</h3>
-        {services.map((item, i)=>(
-          <CustomInput {...item} onChange={handleOnChange}/>
+         {/* Services input fields */}
+         {formData.Services.map((service, index) => (
+          <div key={index}>
+            <label>
+              Service Title:
+              <input
+                type="text"
+                value={service.title}
+                onChange={(e) =>
+                  handleServiceChange(index, "title", e.target.value)
+                }
+                placeholder="Service Title"
+              />
+            </label>
+
+            <label>
+              Unique Selling Point:
+              <input
+                type="text"
+                value={service.uniqueSellingPoint}
+                onChange={(e) =>
+                  handleServiceChange(
+                    index,
+                    "uniqueSellingPoint",
+                    e.target.value
+                  )
+                }
+                placeholder="Unique Selling Point"
+              />
+            </label>
+
+            <label>
+              Benefits:
+              <input
+                type="text"
+                value={service.benefits}
+                onChange={(e) =>
+                  handleServiceChange(index, "benefits", e.target.value)
+                }
+                placeholder="Benefits"
+              />
+            </label>
+          </div>
         ))}
+        <button type="button" onClick={() => setFormData({
+            ...formData,
+            Services: [...formData.Services, { title: "", uniqueSellingPoint: "", benefits: "" }]
+          })}>
+          Add Service
+        </button>
+        <button type="submit">Submit</button>
       </Form>
+      {response && (
+        <div>
+          {/* Display response data */}
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
     </div>
   )
-}
-
+        }
 export default InputForm
