@@ -106,9 +106,10 @@ const InputForm = () => {
         {inputs.map((item, i)=>(
           <CustomInput {...item} onChange={handleOnChange}/>
         ))}
+        <hr />
          {/* Services input fields */}
          {formData.Services.map((service, index) => (
-          <div key={index}>
+          <div key={index} className='form'>
             <label>
               Service Title:
               <input
@@ -120,7 +121,7 @@ const InputForm = () => {
                 placeholder="Service Title"
               />
             </label>
-
+            <br />
             <label>
               Unique Selling Point:
               <input
@@ -136,7 +137,7 @@ const InputForm = () => {
                 placeholder="Unique Selling Point"
               />
             </label>
-
+            <br />
             <label>
               Benefits:
               <input
